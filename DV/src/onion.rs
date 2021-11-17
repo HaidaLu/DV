@@ -60,21 +60,7 @@ pub fn send(s: &[[u8];u8], hk: &[u8], ad: &[u8], msg: &[u8]) -> (&[u8], &[u8]){
     let pt = serde_json::to_string(&plaintext).unwrap().as_bytes();
 
 
-    /**
-    for i := n - 1; i >= 0; i-- {
-    	ad = primitives.Digest(sha256.New(), hk, ad, c[i])
 
-    	var st onionSender
-    	if err = binary.Unmarshal(s[i], &st); err != nil {
-    		return nil, nil, errors.Wrap(err, "unable to decode onion sender state")
-    	}
-
-    	c[i], err = o.sc.signcrypt(st.SKS, st.PKR, ad, ks[i])
-    	if err != nil {
-    		return nil, nil, errors.Wrap(err, "unable to signcrypt message")
-    	}
-    }
-     */
 }
 
 pub fn receive(s: &[[u8];u8], hk: &[u8], ad: &[u8], ct: &[u8]) -> (&[u8], &[u8]){
