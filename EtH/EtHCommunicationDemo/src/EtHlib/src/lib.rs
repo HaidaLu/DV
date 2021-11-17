@@ -1,9 +1,10 @@
 extern crate crypto;
 extern crate sha1;
 mod state;
+mod sarcad;
 mod hash;
 mod otae;
-mod sarcad;
+
 
 
 #[cfg(test)]
