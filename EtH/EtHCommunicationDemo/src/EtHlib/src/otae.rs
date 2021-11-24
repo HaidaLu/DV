@@ -10,7 +10,7 @@ use crypto::aessafe::*;
 use crypto::blockmodes::*;
 use crypto::symmetriccipher::*;
 use rand::{Rng,OsRng};
-//mod key_pair;
+//mod KeyPair;
 pub struct key_pair {
  sk: [u8; 32],
  rk: [u8; 32]

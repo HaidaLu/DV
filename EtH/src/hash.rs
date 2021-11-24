@@ -1,5 +1,5 @@
 /** This mod defines a hash function family and provides
-  h_eval: an algorithm which maps hk and sk to a new sk.
+  h_eval: an algorithm that maps hk and sk to a new sk.
  */
 
 //Sha 256
@@ -21,6 +21,7 @@ const K: [u32; 64] = [
  0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
 ];
 
+#[derive(Debug)]
 pub struct Sha256 {
  state: [u32; 8],
  completed_data_blocks: u64,
@@ -226,4 +227,3 @@ pub fn h_eval(key: &[u8], message: &[u8]) -> [u8; 20] {
  sha1_ctx.update(&inner_hash);
  sha1_ctx.digest().bytes()
 }*/
-

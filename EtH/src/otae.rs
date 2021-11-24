@@ -1,7 +1,8 @@
 /** This module provide three methods
     1. to derive a key pair
-    2. to encrypt the plaintext using aes256
-    3. to decrypt the ciphertext*/
+    2. to encrypt the plaintext using aes256_cbc
+    3. to decrypt the ciphertext
+ */
 
 use std::str;
 use crypto::{symmetriccipher,buffer,aes,blockmodes};
@@ -10,12 +11,15 @@ use crypto::aessafe::*;
 use crypto::blockmodes::*;
 use crypto::symmetriccipher::*;
 use rand::{Rng,OsRng};
-//mod key_pair;
-pub struct key_pair {
- sk: [u8; 32],
- rk: [u8; 32]
+
+
+
+#[derive(Debug)]
+pub struct KeyPair {
+ pub sk: [u8; 32],
+ pub rk: [u8; 32]
 }
-pub fn derive_key_pair() -> key_pair {
+pub fn derive_key_pair() -> KeyPair {
   let mut sender_key: [u8; 32] = [0; 32];
   let mut receive_key: [u8; 32] = [0; 32];
 
@@ -24,63 +28,87 @@ pub fn derive_key_pair() -> key_pair {
   let mut r_rng = OsRng::new().ok().unwrap();
   r_rng.fill_bytes(&mut receive_key);
 
-  let k_pair = key_pair {
+  let k_pair = KeyPair {
    sk: sender_key,
    rk: receive_key,
   };
-
  k_pair
-
 }
+
 // Encrypt a buffer with the given key and iv(ad) using AES-256/CBC encryption
-pub fn encrypt(sk: &[u8], ad: &[u8], pt: &[u8]) -> Result<Vec<u8>, symmetriccipher::SymmetricCipherError> {
- let mut encryptor = aes::cbc_encryptor(
-  aes::KeySize::KeySize256,
-  sk,
-  ad,
-  blockmodes::PkcsPadding);
+pub fn encrypt_aes_256_cbc(plaintext: &[u8], key: &[u8], ad: &[u8]) -> Result<Vec<u8>, symmetriccipher::SymmetricCipherError> {
+  let mut encryptor=aes::cbc_encryptor(
+   aes::KeySize::KeySize256,
+   key,
+   ad,
+   blockmodes::PkcsPadding);
 
- let mut final_result = Vec::<u8>::new();
- let mut read_buffer = buffer::RefReadBuffer::new(data);
- let mut buffer = [0;4096];
- let mut write_buffer = buffer::RefWriteBuffer::new(&mut buffer);
+  let mut final_result=Vec::<u8>::new();
+  let mut read_buffer=buffer::RefReadBuffer::new(plaintext);
+  let mut buffer=[0;4096];
+  let mut write_buffer=buffer::RefWriteBuffer::new(&mut buffer);
 
- loop {
-  let result=try!(encryptor.encrypt(&mut read_buffer,&mut write_buffer,true));
+  loop{
+   let result= encryptor.encrypt(&mut read_buffer, &mut write_buffer, true)?;
 
-  final_result.extend(write_buffer.take_read_buffer().take_remaining().iter().map(|&i| i));
+   final_result.extend(write_buffer.take_read_buffer().take_remaining().iter().map(|&i| i));
 
-  match result {
-   BufferResult::BufferUnderflow=>break,
-   BufferResult::BufferOverflow=>{},
+   match result {
+    BufferResult::BufferUnderflow=>break,
+    BufferResult::BufferOverflow=>{},
+   }
   }
+
+  Ok(final_result)
  }
- Ok(final_result)
-}
 
 
-//Decrypts a buffer with the given key and ad using AES-256/CBC/Pkcs encryption.
-pub fn decrypt(rk: &[u8], ad: &[u8], ct: &[u8]) -> Result<Vec<u8>, symmetriccipher::SymmetricCipherError> {
+//aes_256_cbc decrypt
+pub fn decrypt_aes_256_cbc(ciphertext: &[u8], key: &[u8], iv: &[u8]) -> Result<Vec<u8>, symmetriccipher::SymmetricCipherError> {
  let mut decryptor = aes::cbc_decryptor(
   aes::KeySize::KeySize256,
-  rk,
-  ad,
+  key,
+  iv,
   blockmodes::PkcsPadding);
-
  let mut final_result = Vec::<u8>::new();
- let mut read_buffer = buffer::RefReadBuffer::new(encrypted_data);
+ let mut read_buffer = buffer::RefReadBuffer::new(ciphertext);
  let mut buffer = [0; 4096];
  let mut write_buffer = buffer::RefWriteBuffer::new(&mut buffer);
 
  loop {
-  let result = try!(decryptor.decrypt(&mut read_buffer, &mut write_buffer, true));
+  let result = decryptor.decrypt(&mut read_buffer, &mut write_buffer, true)?;
   final_result.extend(write_buffer.take_read_buffer().take_remaining().iter().map(|&i| i));
   match result {
    BufferResult::BufferUnderflow => break,
    BufferResult::BufferOverflow => { }
   }
  }
-
  Ok(final_result)
+}
 
+
+pub fn encrypt_aes_256_ctr(plaintext: &[u8], key: &[u8], ad: &[u8]) ->Result<Vec<u8>,symmetriccipher::SymmetricCipherError>{
+    let mut final_result=Vec::<u8>::new();
+    let mut read_buffer=buffer::RefReadBuffer::new(plaintext);
+    let mut buffer=[0;4096];
+    let mut write_buffer=buffer::RefWriteBuffer::new(&mut buffer);
+
+    let mut encoder=CtrMode::new(AesSafe256Encryptor::new(key), ad.to_vec());
+    encoder.encrypt(&mut read_buffer,&mut write_buffer,true)?;
+
+    final_result.extend(write_buffer.take_read_buffer().take_remaining().iter().map(|&i| i));
+    Ok(final_result)
+}
+
+pub fn decrypt_aes_256_ctr(ciphertext: &[u8], key: &[u8], ad: &[u8]) ->Result<Vec<u8>,symmetriccipher::SymmetricCipherError>{
+    let mut final_result = Vec::<u8>::new();
+    let mut read_buffer = buffer::RefReadBuffer::new(ciphertext);
+    let mut buffer = [0; 4096];
+    let mut write_buffer = buffer::RefWriteBuffer::new(&mut buffer);
+
+    let mut decoder=CtrMode::new(AesSafe256Encryptor::new(key), ad.to_vec());
+    decoder.decrypt(&mut read_buffer,&mut write_buffer,true)?;
+
+    final_result.extend(write_buffer.take_read_buffer().take_remaining().iter().map(|&i| i));
+    Ok(final_result)
 }

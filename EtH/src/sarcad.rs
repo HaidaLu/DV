@@ -1,67 +1,69 @@
 //use std::borrow::Borrow;
 //use core::slice::SlicePattern;
+
 /**
-    1. Initall: set up the hk and initialize the key pair, the two parties' state
-    2. Send: Encrypt the plaintext, update the sender key and sender state
-    3. Receive: Decrypt the ciphertext, update the receiver key and receiver state.
+    1. Initall: set up the hk and initialize the key pair, the two parties' State
+    2. Send: Encrypt the plaintext, update the sender key and sender State
+    3. Receive: Decrypt the ciphertext, update the receiver key and receiver State.
  */
+
 use rand::{Rng, OsRng};
-use crate::otae::{derive_key_pair, encrypt, decrypt};
-use crate::state::{state,update_sk, update_rk};
+use crate::otae::{derive_key_pair, encrypt_aes_256_cbc, decrypt_aes_256_cbc};
+use crate::state::{State,update_sk, update_rk};
+//use crate::state::{State};
 use crate::hash::Sha256;
 
 
 
-pub fn initall() -> (&state, &state) {
+pub fn initall() -> (State, State) {
  //setup a hk (need updated)
  let mut h_k:[u8;32] = [0; 32];
  let mut rng = OsRng::new().ok().unwrap();
  rng.fill_bytes(&mut h_k);
 
- let mut keys = derive_key_pair;
- let mut st_a = state {
+ let keys = derive_key_pair();
+ let mut st_a = State {
   hk: h_k,
   sk: keys.sk,
   rk: keys.rk,
  };
- let mut st_b = state {
+ let mut st_b = State {
   hk: h_k,
   sk: keys.rk,
   rk: keys.sk,
  };
 
- (&st_a, &st_b)
+ (st_a, st_b)
 
 }
 
-pub fn send(st: &state, ad: &[u8], pt: &[u8]) -> (&state, &[u8]){
 
- // encrypt
- let mut ct = encrypt(&st.sk, ad, pt).unwrap().as_slice();
- // update the sender key
- let mut data :[u8] = u8;
- let len1 = st.hk.len();
- let len2 = st.sk.len();
- for i in len1 {
-  data[i] = st.hk[i];
- }
- for j in len2 {
-  data[j + len1] = st.sk[j];
- }
- let mut new_sk = Sha256::h_eval(&data);
+pub fn send(st: State, ad: &[u8], pt: &[u8]) -> (State, Vec<u8>){
 
- // update the sender state
- st.update_sk(new_sk);
- //return the tuple
- (st, ct)
+ /**encrypt*/
+ let sender_key = st.sk;
+ let ct = encrypt_aes_256_cbc(pt, &sender_key, &ad).ok().unwrap();
+
+ /**update the sender key*/
+
+  /**update the sender state*/
+ let new_sk = Sha256::h_eval(&st.sk);
+ //let new_rk = Sha256::h_eval(&st_b.rk);
+ let new_st = update_sk(st, new_sk);
+
+ /**return the tuple*/
+ (new_st, ct)
 }
 
-pub fn receive(st: state, ad: &[u8], ct: &[u8]) -> (bool,&state, &[u8]) {
 
- //decrypt the cipher
- let mut pt = decrypt(&st.rk, ad, ct).unwrap().as_slice().expect("unable to decrypt the ciphertext");
+pub fn receive(st: State, ad: &[u8], ct: &[u8]) -> (State, Vec<u8>) {
 
- //update the receiver key
+ /**decrypt the cipher*/
+ let receive_key = st.rk;
+ let pt = decrypt_aes_256_cbc(&ct, &receive_key, &ad).ok().unwrap();
+
+ /**update the receiver key*/
+ /*
  let len1 = st.hk.len();
  let len2 = st.rk.len();
  for i in len1 {
@@ -69,12 +71,12 @@ pub fn receive(st: state, ad: &[u8], ct: &[u8]) -> (bool,&state, &[u8]) {
  }
  for j in len2 {
   data[j + len1] = st.rk[j];
- }
- let mut new_rk = Sha256::h_eval(data);
+ }*/
+ let new_rk = Sha256::h_eval(&st.rk);
 
- //update the state;
- st.update_rk(st, new_rk);
+ /**update the State;*/
+ let new_st = update_rk(st, new_rk);
  //return
- (true, &st, pt)
+ (new_st, pt)
 
 }

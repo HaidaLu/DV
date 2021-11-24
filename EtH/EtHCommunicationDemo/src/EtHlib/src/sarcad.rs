@@ -1,9 +1,9 @@
 //use std::borrow::Borrow;
 //use core::slice::SlicePattern;
 /**
-    1. Initall: set up the hk and initialize the key pair, the two parties' state
-    2. Send: Encrypt the plaintext, update the sender key and sender state
-    3. Receive: Decrypt the ciphertext, update the receiver key and receiver state.
+    1. Initall: set up the hk and initialize the key pair, the two parties' State
+    2. Send: Encrypt the plaintext, update the sender key and sender State
+    3. Receive: Decrypt the ciphertext, update the receiver key and receiver State.
  */
 use rand::{Rng, OsRng};
 use crate::otae::{derive_key_pair, encrypt, decrypt};
@@ -50,7 +50,7 @@ pub fn send(st: &state, ad: &[u8], pt: &[u8]) -> (&state, &[u8]){
  }
  let mut new_sk = Sha256::h_eval(&data);
 
- // update the sender state
+ // update the sender State
  st.update_sk(new_sk);
  //return the tuple
  (st, ct)
@@ -72,7 +72,7 @@ pub fn receive(st: state, ad: &[u8], ct: &[u8]) -> (bool,&state, &[u8]) {
  }
  let mut new_rk = Sha256::h_eval(data);
 
- //update the state;
+ //update the State;
  st.update_rk(st, new_rk);
  //return
  (true, &st, pt)

@@ -36,17 +36,17 @@ public class SendThread implements Runnable {
                 data = reader.readLine();
                 byte[] plaintext = data.getBytes();
                 /**
-                 * call a native JNI.send function to obtain a ciphertext and update the state
+                 * call a native JNI.send function to obtain a ciphertext and update the State
                  */
 
-                //JNI.send(state, plaintext); -> ciphertext + newState
+                //JNI.send(State, plaintext); -> ciphertext + newState
                 //System.out.println("the ciphertext is: " + ciphertext);
                 DatagramPacket packet = new DatagramPacket(plaintext, 0, plaintext.length, new InetSocketAddress(this.toIP, this.toPort));
                 /**
                  * send the ciphertext
                  */
                 //DatagramPacket packet = new DatagramPacket(ciphertext, 0, ciphertext.length, new InetSocketAddress(this.toIP, this.toPort));
-                //this.state = newState;
+                //this.State = newState;
 
                 client.send(packet);
                 if (data.equals("bye")) {

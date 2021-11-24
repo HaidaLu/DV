@@ -1,5 +1,5 @@
-/** This module defines a state instance
-    state (hk, sk, rk)
+/** This module defines a State instance
+    State (hk, sk, rk)
  */
 
 pub struct state {

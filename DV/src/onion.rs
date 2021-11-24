@@ -1,72 +1,46 @@
-use serde::{Serialize, Deserialize};
+
+use crypto::symmetriccipher;
+use rand::{OsRng, Rng};
+use crate::otae::*;
+use crate::hash::Sha256;
 use crate::signcryption::*;
-use crate::otae::{derive_key_pair, encrypt, decrypt};
 
-#[derive(Serialize, Deserialize)]
-pub struct OnionSender {
-    sks: [u8],
-    pkr: [u8],
-}
-#[derive(Serialize, Deserialize)]
-pub struct OnionReceiver {
-    skr: [u8],
-    pks: [u8],
-}
-#[derive(Serialize, Deserialize)]
-pub struct OnionMessage {
-    s: *[u8],    // s designates the new receiver state
-    msg: *[u8],  //plaintext
-}
-#[derive(Serialize, Deserialize)]
-pub struct OnionCiphertext {
-    ct: [[u8];u8], //2d array
-}
+pub fn onion_encrypt (hk: &[u8], s:&[[u8];u8], mut ad: &[u8], pt: &[u8]) -> [&[u8]; {0}] {
 
-pub fn init() -> (&[u8],&[u8]) {
-    //mutable
-    let sign_key = generate_sign_key();
-    let sks = sign_key[0];
-    let skr = sign_key[1];
-    let cipher_key = generate_cipher_key();
-    let pks = cipher_key[0];
-    let pkr = cipher_key[1];
+    //pick k -> k1, k2, .... kn
+    let mut sym_key: [u8; 16] = [0; 16];
+    let mut s_rng = OsRng::new().ok().unwrap();
+    s_rng.fill_bytes(&mut sym_key);
 
-    let mut sender = OnionSender{
-        sks,
-        pkr,
-    };
-    let mut receiver = OnionReceiver {
-        skr,
-        pks,
-    };
-    let s = serde_json::to_string(&sender).expect("unable to encode onion sender").unwrap().as_bytes();
-    let r = serde_json::to_string(&receiver).expect("unable to encode onion receiver").unwrap().as_bytes();
-    (s, r)
+    const N: usize = s.len();
+    let mut ct : [&[u8]; N] = [&[0]; N];
+    let mut n = N;
+
+    ct[n] = encrypt_aes_256_ctr(pt, &sym_key, ad).expect("cannot encrypt!").as_slice();
+
+    for i in n - 1 { // 要改，应该是倒序
+        ad = &Sha256::h_eval(ad);
+        ct[i] = sign_crypt(s.sks, s.pkr, ad, key);
+    }
+    ct
 }
 
-pub fn send(s: &[[u8];u8], hk: &[u8], ad: &[u8], msg: &[u8]) -> (&[u8], &[u8]){
-    let u = init();
-    let mut us = u.0;
-    let mut ur = u.1;
-    let n = s.len();
+pub fn onion_decrypt(hk: &[u8], s:&[[u8];u8], mut ad: &[u8], ct: &[u8]) -> Result<Vec<u8>, symmetriccipher::SymmetricCipherError> {
 
-    //One-time symmetric encryption
-    //let k: &[u8; 16];
-    //let ks : &[[u8]; n];
-    let plaintext = OnionMessage{
-        s:ur,
-        msg,
-    };
-    let pt = serde_json::to_string(&plaintext).unwrap().as_bytes();
+    // parse ct-> ad_{n+1}
+    let k:[u8;16] = [0;16];
+    const N: usize = s.len();
+    let mut ct: [&[u8]; N] = [&[0]; N];
+    let mut n = N;
 
 
-
-}
-
-pub fn receive(s: &[[u8];u8], hk: &[u8], ad: &[u8], ct: &[u8]) -> (&[u8], &[u8]){
-    let n = s.len();
-    let k : &[u8;16] = &[];
-
-    let mut pt = decrypt(k, ad, ct).unwrap().as_slice().expect("unable to decrypt the ciphertext");
+    //for i = n downto 1 , need to modified
+    for i in n {
+        //ad = &Sha256::h_eval(ad);
+        ad = &Sha256::h_eval(ad);
+        k[i] = unsign_crypt(s.skr, s.pks, ad,ct[i]);
+    }
+    let pt = decrypt_aes_256_cbc(ct.0, &k, ad);
+    pt
 
 }

@@ -32,12 +32,12 @@ public class ReceiveThread implements Runnable {
                 server.receive(packet);
                 byte[] ciphertext =packet.getData();
                 /**
-                 * call a native JNI.receive function to decrypt the msg and update the state
+                 * call a native JNI.receive function to decrypt the msg and update the State
                  */
 
 
-                // JNI.receive(state, ciphertext); -> plaintext + newState
-                //this.state = newState;
+                // JNI.receive(State, ciphertext); -> plaintext + newState
+                //this.State = newState;
                 //System.out.println("receive the ciphertext" + ciphertext);
 
                 int len=packet.getLength();
