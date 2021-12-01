@@ -1,10 +1,4 @@
-
-use digest::Digest;
-use sha2::{Sha512};
-use curve25519::{GeP2, GeP3, ge_scalarmult_base, sc_reduce, sc_muladd, curve25519, Fe};
-use util::{fixed_time_eq};
-use std::ops::{Add, Sub, Mul};
-use crypto::curve25519::{curve25519, Fe, ge_scalarmult_base, GeP2, GeP3, sc_muladd, sc_reduce};
+use crypto::curve25519::{ge_scalarmult_base, GeP2, GeP3, sc_muladd, sc_reduce};
 use crypto::digest::Digest;
 use crypto::sha2::Sha512;
 use crypto::util::fixed_time_eq;
@@ -15,7 +9,8 @@ static L: [u8; 32] =
         0x14, 0xde, 0xf9, 0xde, 0xa2, 0xf7, 0x9c, 0xd6,
         0x58, 0x12, 0x63, 0x1a, 0x5c, 0xf5, 0xd3, 0xed ];
 
-pub fn keypair(seed: &[u8]) -> ([u8; 64], [u8; 32]) {
+
+pub fn generate(seed: &[u8]) -> ([u8; 64], [u8; 32]) {
     let mut secret: [u8; 64] = {
         let mut hash_output: [u8; 64] = [0; 64];
         let mut hasher = Sha512::new();
@@ -37,6 +32,7 @@ pub fn keypair(seed: &[u8]) -> ([u8; 64], [u8; 32]) {
     }
     (secret, public_key)
 }
+
 
 pub fn signature(message: &[u8], secret_key: &[u8]) -> [u8; 64] {
     let seed = &secret_key[0..32];
@@ -84,8 +80,9 @@ pub fn signature(message: &[u8], secret_key: &[u8]) -> [u8; 64] {
     signature
 }
 
-fn check_s_lt_l(s: &[u8]) -> bool
-{
+fn check_s_lt_l(s: &[u8]) -> bool {
+
+
     let mut c: u8 = 0;
     let mut n: u8 = 1;
 
@@ -102,6 +99,8 @@ fn check_s_lt_l(s: &[u8]) -> bool
 
     c == 0
 }
+
+
 
 pub fn verify(message: &[u8], public_key: &[u8], signature: &[u8]) -> bool {
     if check_s_lt_l(&signature[32..64]) {
@@ -134,23 +133,3 @@ pub fn verify(message: &[u8], public_key: &[u8], signature: &[u8]) -> bool {
     fixed_time_eq(rcheck.as_ref(), &signature[0..32])
 }
 
-pub fn exchange(public_key: &[u8], private_key: &[u8]) -> [u8; 32] {
-    let ed_y = Fe::from_bytes(&public_key);
-    // Produce public key in Montgomery form.
-    let mont_x = edwards_to_montgomery_x(ed_y);
-
-    // Produce private key from seed component (bytes 0 to 32)
-    // of the Ed25519 extended private key (64 bytes).
-    let mut hasher = Sha512::new();
-    hasher.input(&private_key[0..32]);
-    let mut hash: [u8; 64] = [0; 64];
-    hasher.result(&mut hash);
-    // Clamp the hash such that it is a valid private key
-    hash[0] &= 248;
-    hash[31] &= 127;
-    hash[31] |= 64;
-
-    let shared_mont_x : [u8; 32] = curve25519(&hash, &mont_x.to_bytes()); // priv., pub.
-
-    shared_mont_x
-}

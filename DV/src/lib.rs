@@ -1,20 +1,17 @@
-extern crate crypto;
-mod bark;
-mod uni;
-mod pkc;
-mod signcryption;
-mod otae;
-mod onion;
-mod hash;
-mod dss;
-pub use crate::dss::*;
-pub use crate::signcryption::*;
+extern crate serde;
+pub mod pkc;
+pub mod signcryption;
+pub mod dss;
+pub mod otae;
+pub mod onion;
+pub mod hash;
+pub mod bark;
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}
+
+pub use pkc::*;
+pub use signcryption::*;
+pub use dss::*;
+pub use otae::*;
+pub use onion::*;
+pub use hash::*;
+

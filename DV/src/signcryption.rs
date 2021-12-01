@@ -1,48 +1,70 @@
-//json -> unsigncrypt
-//sign key and cipher key
-//extern crate crypto;
-extern crate serde_json;
-use crypto::*;
-use crypto::ed25519::{keypair, signature, verify};
-use rsa::{PaddingScheme, PublicKey, PublicKeyParts, RSAPrivateKey, RSAPublicKey};
-use crate::pkc;
+use crypto::ed25519::keypair;
+use crate::{dss, pkc, otae};
+use bincode;
+use serde::{Serialize, Deserialize};
+use std::str;
 
+
+//这里的ad好像都没有起到作用
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SigncryptionBlock {
+    pub signature: Vec<u8>,
+    pub message: Vec<u8>,
+    pub ad: Vec<u8>
+}
 
 
 /**
- generate a key pair of sign_key*/
-pub fn generate_sign_key() -> ([u8; 64], [u8; 32]) {
+generate a key pair of sign_key*/
+pub fn generate_sign_key() -> ([u8; 32], [u8; 64]) {
     let seed: &[u8] = &[0x26, 0x27, 0xf6, 0x85, 0x97, 0x15, 0xad, 0x1d, 0xd2, 0x94, 0xdd, 0xc4, 0x76, 0x19, 0x39, 0x31, 0xf1, 0xad, 0xb5, 0x58, 0xf0, 0x93, 0x97, 0x32, 0x19, 0x2b, 0xd1, 0xc0, 0xfd, 0x16, 0x8e, 0x4e];//32位
-    keypair(seed)
+    let (secret_key, public_key) = dss::generate(seed);
+    (public_key, secret_key)
 }
 
 /**
 generate a private and public key pair.
-*/
-pub fn generate_cipher_key() -> (RSAPrivateKey, RSAPublicKey){
-    let (private_key, pub_key) = pkc::generate();
-    (private_key, pub_key)
+ */
+pub fn generate_cipher_key() -> (Vec<u8>, Vec<u8>){
+    pkc::generate()
 }
 
 
 
-pub fn sign_crypt(sks: &[u8], pkr: &[u8], ad: &[u8], msg: &[u8]) -> Vec<u8> {
-    // use sks to sign the (ad, pt)
-    let sks_key = RSAPrivateKey::from_pkcs1(sks).unwrap();
-    let sig = sks_key.sign(PaddingScheme::new_pss(ad), msg).expect("Fail to sign").as_slice();
-    // use pkr to encrypt the signature
-    let ct = pkc::encrypt(pkr, msg, sig);
+
+// SC.Enc = PKC.Enc(pk, (pt, DSS.Sign(sks, (ad, pt))
+pub fn sc_encrypt(sks: &[u8], pkr: Vec<u8>, ad: &[u8], msg: &[u8]) -> Vec<u8> {
+
+
+    /** message 要加上ad */
+    let sig = dss::signature(msg, sks);
+
+    let block = SigncryptionBlock{
+        signature:sig.to_vec(),
+        message: msg.to_vec(),
+        ad: ad.to_vec(),
+    };
+    let b = serde_json::to_string(&block).unwrap();
+
+
+    let ct = pkc::encrypt(pkr.to_vec(), b.as_bytes(), ad); // 这里要将sig改成三者合并
+
     ct
 }
 
 
-pub fn unsign_crypt(skr: &[u8], pks: &[u8], sig : &[u8], ct: &[u8]) -> &[u8] {
-    let pks_key = RSAPublicKey::from_pkcs1(pks);
-    //use skr to decrypt the ct
-    let pt = pkc::decrypt(skr, ct, ad);
-    //verify and get the message
-    //let msg = pks_key.verify(PaddingScheme::new_pss(ad), sig).expect("Fail to verify"); //hashed??
-    verify(pt, pks, sig).expect("Fail to verify");
-    //return message, remove the ad
-    pt
+
+pub fn sc_decrypt(skr: Vec<u8>, pks: &[u8], ad : &[u8], ct: &[u8]) -> Option<Vec<u8>> {
+    // 应该没有sig, 由ct解码得到
+    let dec = pkc::decrypt(skr.to_vec(), ct, ad); //最后的ad
+    //这里的dec应该是ad+message+signature
+
+    //let block:SigncryptionBlock = bincode::deserialize(&dec).unwrap();
+    let plain_text =str::from_utf8(dec.as_slice()).unwrap();
+    let block :SigncryptionBlock = serde_json::from_str(&plain_text).unwrap();
+    if dss::verify(&block.message, pks, &block.signature) {
+        Some(block.message)
+    } else {
+        None
+    }
 }

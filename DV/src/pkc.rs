@@ -1,36 +1,69 @@
-extern crate rsa;
-//extern crate pkcs1;
-use crypto::sha2;
-use rand::OsRng;
-use rsa::{PublicKey, PaddingScheme, RSAPrivateKey, RSAPublicKey};
 
+use openssl::rsa::{Rsa, Padding};
+//use openssl::symm::Cipher;
 //pkc -> signcryption -> onion -> uni
 
 
-/** provide fn for RSA asymmetric encryption/decryption
- */
 
+// RSA-OAEP
+pub fn generate() -> (Vec<u8>, Vec<u8>) {
 
-pub fn generate() -> (RSAPrivateKey, RSAPublicKey) {
+    let rsa = Rsa::generate(1024).unwrap();
+    //let private_key = rsa.private_key_to_pem_passphrase(Cipher::aes_128_cbc(), passphrase.as_bytes()).unwrap().as_slice();
+    let private_key = rsa.private_key_to_pem().unwrap();
+    let public_key = rsa.public_key_to_pem().unwrap();
 
-    let mut rng = OsRng;
-    let bits = 2048;
-    let private_key = RSAPrivateKey::new(&mut rng, bits).expect("failed to generate a key");
-    let public_key = RSAPublicKey::from(&private_key);
-    (private_key, public_key)
+    //let private_keya =  String::from_utf8(private_key).unwrap().as_bytes();
+    //println!("Public key: {}", String::from_utf8(public_key).unwrap());
+    (public_key,private_key)
 }
 
 
-pub fn encrypt(pkr: &[u8], msg: &[u8], ad: &[u8]) -> Vec<u8> {
-    let mut rng = OsRng;
-    let pkr_key = RSAPublicKey::from_pkcs1(pkr).unwrap();
-    let ct = pkr_key.encrypt(&mut rng, PaddingScheme::new_pss(ad), &msg).expect("failed to encrypt");
-    ct
+// 要用ad的话或许可以考虑from_penpassword..
+pub fn encrypt(pk: Vec<u8>, msg: &[u8], _ad: &[u8]) -> Vec<u8> {
+    // Encrypt with public key
+
+    let rsa = Rsa::public_key_from_pem(String::from_utf8(pk).unwrap().as_bytes()).unwrap();
+
+    let mut i = 0;
+    let length = 86;
+    let mut encrypt_data = Vec::new();
+
+    loop {
+        let mut size = msg.len() - i;
+        if size > length {
+            size = length;
+        }
+        let mut buf: Vec<u8> = vec![0; rsa.size() as usize];
+        let _ = rsa.public_encrypt(&msg[i..i+size], &mut buf, Padding::PKCS1_OAEP).unwrap();
+        encrypt_data.append(&mut buf);
+        i += length;
+        if i>= msg.len() {
+            break;
+        }
+    }
+    //let _ = rsa.public_encrypt(msg, &mut buf, Padding::PKCS1_OAEP).unwrap();
+    //panics if to is smaller than self.size()
+    //println!("Encrypted: {:?}", ct);
+    encrypt_data
 }
 
-pub fn decrypt(sk: &[u8], ct: &[u8], ad: &[u8]) -> &[u8] {
-    let sk_key = RSAPrivateKey::from_pkcs1(sk).unwrap();
-    let msg = sk_key.decrypt(PaddingScheme::new_pss(ad), &ct).expect("failed to decrypt");
-    msg.as_slice()
+pub fn decrypt(sk: Vec<u8>, ct: &[u8], _ad: &[u8]) -> Vec<u8> {
+    let mut decrypt_data = Vec::new();
+    let mut i = 0;
+    let length = 128;
+    let rsa = Rsa::private_key_from_pem(String::from_utf8(sk).unwrap().as_bytes()).unwrap();
+    loop{
+        let mut buf: Vec<u8> = vec![0; rsa.size() as usize];
+        let bytes = rsa.private_decrypt(&ct[i..i+length], &mut buf, Padding::PKCS1_OAEP).unwrap();
+        //let pt = String::from_utf8(buf[0..bytes].to_vec()).unwrap();
+        let mut enc = buf[0..bytes].to_vec();
+        decrypt_data.append(&mut enc);
+        i += length;
+        if i >= ct.len() {
+            break;
+        }
+        //pt.into_bytes()
+    }
+    decrypt_data
 }
-

@@ -1,3 +1,4 @@
+
 /** privide primitives for symmetric encryption/decryption
  */
 
@@ -74,7 +75,6 @@ pub fn decrypt_aes_256_cbc(ciphertext: &[u8], key: &[u8], iv: &[u8]) -> Result<V
  let mut read_buffer = buffer::RefReadBuffer::new(ciphertext);
  let mut buffer = [0; 4096];
  let mut write_buffer = buffer::RefWriteBuffer::new(&mut buffer);
-
  loop {
   let result = decryptor.decrypt(&mut read_buffer, &mut write_buffer, true)?;
   final_result.extend(write_buffer.take_read_buffer().take_remaining().iter().map(|&i| i));
@@ -113,4 +113,21 @@ pub fn decrypt_aes_256_ctr(ciphertext: &[u8], key: &[u8], ad: &[u8]) ->Result<Ve
 
  final_result.extend(write_buffer.take_read_buffer().take_remaining().iter().map(|&i| i));
  Ok(final_result)
+}
+
+
+pub fn generate_random_string() -> String {
+ let mut rng = rand::thread_rng();
+ let random_number: u8 = rng.gen();
+ let pt = serde_json::to_string(&random_number).unwrap();
+ let original_message = serde_json::to_string(&random_number).unwrap();
+ original_message
+}
+
+
+pub fn generate_iv() -> [u8; 16] {
+ let mut iv: [u8; 16] = [0; 16];
+ let mut rng = OsRng::new().ok().unwrap();
+ rng.fill_bytes(&mut iv);
+ iv
 }
