@@ -19,7 +19,6 @@ pub fn generate() -> (Vec<u8>, Vec<u8>) {
 }
 
 
-// 要用ad的话或许可以考虑from_penpassword..
 pub fn encrypt(pk: Vec<u8>, msg: &[u8], _ad: &[u8]) -> Vec<u8> {
     // Encrypt with public key
 
