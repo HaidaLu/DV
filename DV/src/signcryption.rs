@@ -5,7 +5,6 @@ use serde::{Serialize, Deserialize};
 use std::str;
 
 
-//这里的ad好像都没有起到作用
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SigncryptionBlock {
     pub signature: Vec<u8>,
@@ -35,8 +34,6 @@ pub fn generate_cipher_key() -> (Vec<u8>, Vec<u8>){
 // SC.Enc = PKC.Enc(pk, (pt, DSS.Sign(sks, (ad, pt))
 pub fn sc_encrypt(sks: &[u8], pkr: Vec<u8>, ad: &[u8], msg: &[u8]) -> Vec<u8> {
 
-
-    /** message 要加上ad */
     let sig = dss::signature(msg, sks);
 
     let block = SigncryptionBlock{
@@ -47,7 +44,7 @@ pub fn sc_encrypt(sks: &[u8], pkr: Vec<u8>, ad: &[u8], msg: &[u8]) -> Vec<u8> {
     let b = serde_json::to_string(&block).unwrap();
 
 
-    let ct = pkc::encrypt(pkr.to_vec(), b.as_bytes(), ad); // 这里要将sig改成三者合并
+    let ct = pkc::encrypt(pkr.to_vec(), b.as_bytes(), ad); 
 
     ct
 }
@@ -55,9 +52,9 @@ pub fn sc_encrypt(sks: &[u8], pkr: Vec<u8>, ad: &[u8], msg: &[u8]) -> Vec<u8> {
 
 
 pub fn sc_decrypt(skr: Vec<u8>, pks: &[u8], ad : &[u8], ct: &[u8]) -> Option<Vec<u8>> {
-    // 应该没有sig, 由ct解码得到
-    let dec = pkc::decrypt(skr.to_vec(), ct, ad); //最后的ad
-    //这里的dec应该是ad+message+signature
+  
+    let dec = pkc::decrypt(skr.to_vec(), ct, ad); 
+
 
     //let block:SigncryptionBlock = bincode::deserialize(&dec).unwrap();
     let plain_text =str::from_utf8(dec.as_slice()).unwrap();
