@@ -51,9 +51,6 @@ pub fn init() -> (String, String) {
 }
 
 //send implements the onion send procedure.
-/*
-s: 代表状态的数组，每个状态用一个String类型包装起来
-*/
 
 pub fn send(mut s : Vec<String>, mut ad: &[u8], msg: Vec<u8>, iv: &[u8]) -> (Vec<String>, String) {
 
