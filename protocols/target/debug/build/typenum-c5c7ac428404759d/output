@@ -1,0 +1,2 @@
+cargo:rustc-env=TYPENUM_BUILD_CONSTS=/Users/luhaida/Documents/SDE/Rust/protocols/target/debug/build/typenum-c5c7ac428404759d/out/consts.rs
+cargo:rustc-env=TYPENUM_BUILD_OP=/Users/luhaida/Documents/SDE/Rust/protocols/target/debug/build/typenum-c5c7ac428404759d/out/op.rs

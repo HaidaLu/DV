@@ -1,0 +1,1 @@
+/Users/luhaida/Documents/SDE/Rust/protocols/target/debug/libprimitives.rlib: /Users/luhaida/Documents/SDE/Rust/protocols/primitives/src/hash.rs /Users/luhaida/Documents/SDE/Rust/protocols/primitives/src/lib.rs /Users/luhaida/Documents/SDE/Rust/protocols/primitives/src/otae.rs
