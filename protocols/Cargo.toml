@@ -1,8 +1,0 @@
-[workspace]
-
-members = [
-	"dv",
-	"primitives",
-	"EtH",
-	"general_tests"
-]

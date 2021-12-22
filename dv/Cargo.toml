@@ -1,0 +1,16 @@
+[package]
+name = "dv"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+openssl = { version = "0.10", features = ["vendored"] }
+primitives = { path = "../primitives" }
+rust-crypto = "^0.2"
+rsa = "0.3.0"
+rand = "0.3.14"
+base64 = "0.12.3"
+serde = { version = "1.0", features = ["derive"] }
+bincode = "1.2.1"

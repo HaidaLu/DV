@@ -1,0 +1,11 @@
+[workspace]
+
+members = [
+	"dv",
+	"EtH",
+	"primitives",
+	"general_tests",
+	"js",
+	"pr"
+
+]
