@@ -1,6 +1,5 @@
 
-//要留意 vector push 和 append的区别
-//该解决的问题 一个动态数组 Vector，在for循环里 get(i) 类型就会变成&?
+
 use rand::{Rng,OsRng};
 use serde::{Serialize, Deserialize};
 use bincode;

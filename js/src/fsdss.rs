@@ -97,11 +97,11 @@ pub fn generate() -> (Vec<u8>, Vec<u8>) {
 pub fn update(sk: Vec<u8>) -> Vec<u8> {
     let private: BellarePrivateKey = bincode::deserialize(&sk).unwrap();
     if private.j > BELLARE_MAX_PERIOD as i8 {
-        //return 错误处理
+        //return 
     }
     let n = BigUint::from_bytes_be(&private.n);
 
-    //新的S是一个S[l][j]二维数组
+    
     let mut S : Vec<Vec<u8>> = vec![];
     for i in BELLARE_NUM_POINTS { // for i = 1 ... l
 
@@ -127,7 +127,7 @@ pub fn sign(sk: Vec<u8>, msg: Vec<u8>) -> Vec<u8> {
     let r: BigUint;
     loop {
         r = Generator::new_uint(_n);
-        if r.to_i64().unwrap() != 0 {       //  要求n小于64？？可能吗
+        if r.to_i64().unwrap() != 0 {       
             break;
         }
     }
@@ -226,7 +226,6 @@ pub fn verify(pk: Vec<u8>, msg: Vec<u8>, sig: Vec<u8>) {
         let convert_u = bigUint::from_bytes_be(&u_a);
         let e_a = e.clone().to_bytes_be();
         let convert_e = bigUint::from_bytes_be(&e_a);
-
         let mul = convert_u.pow(convert_e.to_u32_digits().pop().unwrap()).to_bytes_be();
         let _mul = BigUint::from_bytes_be(&mul);
         p = p * _mul;

@@ -2,10 +2,16 @@
 <project version="4">
   <component name="CargoProjects">
     <cargoProject FILE="$PROJECT_DIR$/EtH/Cargo.toml" />
+    <cargoProject FILE="$PROJECT_DIR$/protocols/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c8f5c012-3a1f-4d36-b326-270b4e7b6b1d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/EtH/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/EtH/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/general_tests/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/general_tests/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/js/src/fsdss.rs" beforeDir="false" afterPath="$PROJECT_DIR$/js/src/fsdss.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/js/src/kudss.rs" beforeDir="false" afterPath="$PROJECT_DIR$/js/src/kudss.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/primitives/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/primitives/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/primitives/src/otae.rs" beforeDir="false" afterPath="$PROJECT_DIR$/primitives/src/otae.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,6 +37,11 @@
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
     <property name="settings.editor.selected.configurable" value="reference.idesettings.debugger.capture" />
   </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/protocols/general_tests/src" />
+    </key>
+  </component>
   <component name="RustProjectSettings">
     <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
     <option name="version" value="2" />
@@ -45,5 +56,17 @@
       <updated>1636540492678</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
 </project>

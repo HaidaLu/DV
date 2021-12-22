@@ -124,7 +124,7 @@ pub fn generate_random_string() -> String {
 }
 
 
-pub fn generate_iv() -> [u8; 16] {
+pub fn generate_ad() -> [u8; 16] {
     let mut iv: [u8; 16] = [0; 16];
     let mut rng = OsRng::new().ok().unwrap();
     rng.fill_bytes(&mut iv);

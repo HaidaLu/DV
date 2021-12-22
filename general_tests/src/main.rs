@@ -78,7 +78,7 @@ fn main() {
 
 pub fn send_hundreds_of_random_messages_test(p: ProtocolType) {
     let mut protocol = Protocol::get_protocol_my_type(p);
-    let ad = dv::generate_iv();
+    let ad = dv::generate_ad();
 
     let mut i = 0;
     loop{
