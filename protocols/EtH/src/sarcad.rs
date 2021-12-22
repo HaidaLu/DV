@@ -65,15 +65,7 @@ pub fn receive(st: State, ad: &[u8], ct: &[u8]) -> (State, Vec<u8>) {
     let pt = decrypt_aes_256_cbc(&ct, &receive_key, &ad).ok().unwrap();
 
     //update the receiver key
-    /*
-    let len1 = st.hk.len();
-    let len2 = st.rk.len();
-    for i in len1 {
-     data[i] = st.hk[i];
-    }
-    for j in len2 {
-     data[j + len1] = st.rk[j];
-    }*/
+
     let new_rk = Sha256::h_eval(&st.rk);
 
     //update the State;

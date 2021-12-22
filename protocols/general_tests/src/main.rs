@@ -5,20 +5,18 @@ pub use EtH::*;
 pub use primitives::*;
 
 fn main() {
-    send_then_receive_test(Protocol::DV);
-    send_then_receive_test(Protocol::EtH);
-    send_hundreds_of_messages_test(Protocol::EtH);
-    send_hundreds_of_messages_test(Protocol::DV);
-    send_hundreds_of_random_messages_test(Protocol::DV);
-    send_hundreds_of_random_messages_test(Protocol::EtH);
-    read_file_send_and_receive_test(Protocol::DV);
-    read_file_send_and_receive_test(Protocol::EtH);
-    read_line_communicate_test(Protocol::EtH);
+
+    //send_then_receive_test(Protocol::DV);
+    //send_then_receive_test(Protocol::EtH);
+    //send_hundreds_of_messages_test(Protocol::EtH);
+    //send_hundreds_of_messages_test(Protocol::DV);
+    //send_hundreds_of_random_messages_test(Protocol::DV);
+    //send_hundreds_of_random_messages_test(Protocol::EtH);
+    //read_file_send_and_receive_test(Protocol::DV);
+    //read_file_send_and_receive_test(Protocol::EtH);
+    //read_line_communicate_test(Protocol::EtH);
     read_line_communicate_test(Protocol::DV);
 }
-
-
-
 
 
 pub fn send_then_receive_test(protocol: Protocol) {

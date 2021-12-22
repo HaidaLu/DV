@@ -3,7 +3,7 @@ use std::{io, str};
 use std::io::{BufRead, Read};
 use std::path::Path;
 use EtH::State;
-use crate::protocol::Protocol::DV;
+
 
 
 #[derive(Debug, Copy, Clone)]
